@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: markm-devpod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devpod
+  template:
+    metadata:
+      labels:
+        app: devpod
+    spec:
+      containers:
+        - name: devpod
+          image: mjmammoth/devpod:v1.2
+          ports:
+            - containerPort: 22
+          volumeMounts:
+            - name: workdir
+              mountPath: /home/dev/work
+          # Ensure SSH server starts
+          command: ["/usr/sbin/sshd"]
+          args: ["-D"]
+      volumes:
+        - name: workdir
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devpod
+spec:
+  selector:
+    app: devpod
+  ports:
+    - port: 22
+      targetPort: 22
+      protocol: TCP
+
