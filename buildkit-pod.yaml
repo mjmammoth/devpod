@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: buildkitd
+spec:
+  containers:
+    - name: buildkitd
+      image: moby/buildkit:latest
+      args: ["buildkitd", "--addr", "unix:///run/buildkit/buildkitd.sock"]
+      env:
+      - name: BUILDKIT_HOST
+        value: "unix:///run/buildkit/buildkitd.sock"
+      ports:
+        - containerPort: 1234
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: docker-creds
+          mountPath: /root/.docker
+  volumes:
+    - name: docker-creds
+      secret:
+        secretName: regcred

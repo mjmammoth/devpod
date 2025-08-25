@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: buildkit-job
+spec:
+  restartPolicy: Never
+  containers:
+    - name: buildkit
+      image: moby/buildkit:latest
+      command:
+        - /bin/sh
+        - -c
+        - |
+          buildkitd --addr unix:///run/buildkit/buildkitd.sock &
+          sleep 5
+          export BUILDKIT_HOST=unix:///run/buildkit/buildkitd.sock
+          buildctl build --frontend dockerfile.v0 \
+            --local context=/workspace \
+            --local dockerfile=/workspace \
+            --output type=image,name=docker.io/YOUR_USER/YOUR_IMAGE,push=true
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+  volumes:
+    - name: workspace
+      emptyDir: {}
+
